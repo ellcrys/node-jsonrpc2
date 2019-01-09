@@ -1,4 +1,4 @@
-module.exports = function (classes){
+module.exports = function (classes) {
   'use strict';
 
   var
@@ -15,8 +15,8 @@ module.exports = function (classes){
     /**
      * JSON-RPC Client.
      */
-      Client = Endpoint.$define('Client', {
-      construct    : function ($super, port, host, user, password){
+    Client = Endpoint.$define('Client', {
+      construct: function ($super, port, host, user, password) {
         $super();
 
         this.port = port;
@@ -24,7 +24,7 @@ module.exports = function (classes){
         this.user = user;
         this.password = password;
       },
-      _authHeader: function(headers){
+      _authHeader: function (headers) {
         if (this.user && this.password) {
           var buff = new Buffer(this.user + ':' + this.password).toString('base64');
           headers['Authorization'] = 'Basic ' + buff;
@@ -36,7 +36,7 @@ module.exports = function (classes){
        * In HTTP mode, we get to submit exactly one message and receive up to n
        * messages.
        */
-      connectHttp  : function (method, params, opts, callback){
+      connectHttp: function (method, params, opts, callback) {
         if (_.isFunction(opts)) {
           callback = opts;
           opts = {};
@@ -47,9 +47,9 @@ module.exports = function (classes){
 
         // First we encode the request into JSON
         var requestJSON = JSON.stringify({
-          'id'     : id,
-          'method' : method,
-          'params' : params,
+          'id': id,
+          'method': method,
+          'params': params,
           'jsonrpc': '2.0'
         });
 
@@ -64,14 +64,14 @@ module.exports = function (classes){
         // Now we'll make a request to the server
         var options = {
           hostname: this.host,
-          port    : this.port,
-          path    : opts.path || '/',
-          method  : 'POST',
-          headers : headers
+          port: this.port,
+          path: opts.path || '/',
+          method: 'POST',
+          headers: headers
         };
         var request;
-        if(opts.https === true) {
-          if(opts.rejectUnauthorized !== undefined) {
+        if (opts.https === true) {
+          if (opts.rejectUnauthorized !== undefined) {
             options.rejectUnauthorized = opts.rejectUnauthorized;
           }
           request = https.request(options);
@@ -82,15 +82,15 @@ module.exports = function (classes){
 
         // Report errors from the http client. This also prevents crashes since
         // an exception is thrown if we don't handle this event.
-        request.on('error', function requestError(err){
+        request.on('error', function requestError(err) {
           callback(err);
         });
         request.write(requestJSON);
-        request.on('response', function requestResponse(response){
+        request.on('response', function requestResponse(response) {
           callback.call(self, id, request, response);
         });
       },
-      connectWebsocket: function(callback){
+      connectWebsocket: function (callback) {
         var self = this, conn, socket, parser, headers = {};
 
         if (!/^wss?:\/\//i.test(self.host)) {
@@ -105,7 +105,7 @@ module.exports = function (classes){
 
         parser = new JsonParser();
 
-        parser.onValue = function parseOnValue(decoded){
+        parser.onValue = function parseOnValue(decoded) {
           if (this.stack.length) {
             return;
           }
@@ -113,15 +113,15 @@ module.exports = function (classes){
           conn.handleMessage(decoded);
         };
 
-        socket.on('error', function socketError(event){
+        socket.on('error', function socketError(event) {
           callback(event.reason);
         });
 
-        socket.on('open', function socketOpen(){
+        socket.on('open', function socketOpen() {
           callback(null, conn);
         });
 
-        socket.on('message', function socketMessage(event){
+        socket.on('message', function socketMessage(event) {
           try {
             parser.write(event.data);
           } catch (err) {
@@ -137,13 +137,13 @@ module.exports = function (classes){
        * This implements JSON-RPC over a raw socket. This mode allows us to send and
        * receive as many messages as we like once the socket is established.
        */
-      connectSocket: function (callback){
+      connectSocket: function (callback) {
         var self = this, socket, conn, parser;
 
-        socket = net.connect(this.port, this.host, function netConnect(){
+        socket = net.connect(this.port, this.host, function netConnect() {
           // Submit non-standard 'auth' message for raw sockets.
           if (!_.isEmpty(self.user) && !_.isEmpty(self.password)) {
-            conn.call('auth', [self.user, self.password], function connectionAuth(err){
+            conn.call('auth', [self.user, self.password], function connectionAuth(err) {
               if (err) {
                 callback(err);
               } else {
@@ -161,7 +161,7 @@ module.exports = function (classes){
         conn = new SocketConnection(self, socket);
         parser = new JsonParser();
 
-        parser.onValue = function parseOnValue(decoded){
+        parser.onValue = function parseOnValue(decoded) {
           if (this.stack.length) {
             return;
           }
@@ -169,7 +169,7 @@ module.exports = function (classes){
           conn.handleMessage(decoded);
         };
 
-        socket.on('data', function socketData(chunk){
+        socket.on('data', function socketData(chunk) {
           try {
             parser.write(chunk);
           } catch (err) {
@@ -179,14 +179,14 @@ module.exports = function (classes){
 
         return conn;
       },
-      stream       : function (method, params, opts, callback){
+      stream: function (method, params, opts, callback) {
         if (_.isFunction(opts)) {
           callback = opts;
           opts = {};
         }
         opts = opts || {};
 
-        this.connectHttp(method, params, opts, function connectHttp(id, request, response){
+        this.connectHttp(method, params, opts, function connectHttp(id, request, response) {
           if (_.isFunction(callback)) {
             var connection = new EventEmitter();
 
@@ -194,19 +194,19 @@ module.exports = function (classes){
             connection.req = request;
             connection.res = response;
 
-            connection.expose = function connectionExpose(method, callback){
-              connection.on('call:' + method, function connectionCall(data){
+            connection.expose = function connectionExpose(method, callback) {
+              connection.on('call:' + method, function connectionCall(data) {
                 callback.call(null, data.params || []);
               });
             };
 
-            connection.end = function connectionEnd(){
+            connection.end = function connectionEnd() {
               this.req.connection.end();
             };
 
             // We need to buffer the response chunks in a nonblocking way.
             var parser = new JsonParser();
-            parser.onValue = function (decoded){
+            parser.onValue = function (decoded) {
               if (this.stack.length) {
                 return;
               }
@@ -214,9 +214,9 @@ module.exports = function (classes){
               connection.emit('data', decoded);
               if (
                 decoded.hasOwnProperty('result') ||
-                  decoded.hasOwnProperty('error') &&
-                    decoded.id === id && _.isFunction(callback)
-                ) {
+                decoded.hasOwnProperty('error') &&
+                decoded.id === id && _.isFunction(callback)
+              ) {
                 connection.emit('result', decoded);
               }
               else if (decoded.hasOwnProperty('method')) {
@@ -226,7 +226,7 @@ module.exports = function (classes){
 
             if (response) {
               // Handle headers
-              connection.res.once('data', function connectionOnce(data){
+              connection.res.once('data', function connectionOnce(data) {
                 if (connection.res.statusCode === 200) {
                   callback(null, connection);
                 } else {
@@ -234,7 +234,7 @@ module.exports = function (classes){
                 }
               });
 
-              connection.res.on('data', function connectionData(chunk){
+              connection.res.on('data', function connectionData(chunk) {
                 try {
                   parser.write(chunk);
                 } catch (err) {
@@ -242,14 +242,14 @@ module.exports = function (classes){
                 }
               });
 
-              connection.res.on('end', function connectionEnd(){
+              connection.res.on('end', function connectionEnd() {
                 // TODO: Issue an error if there has been no valid response message
               });
             }
           }
         });
       },
-      call         : function (method, params, opts, callback){
+      call: function (method, params, opts, callback) {
         if (_.isFunction(opts)) {
           callback = opts;
           opts = {};
@@ -257,7 +257,7 @@ module.exports = function (classes){
         opts = opts || {};
         EventEmitter.trace('-->', 'Http call (method ' + method + '): ' + JSON.stringify(params));
 
-        this.connectHttp(method, params, opts, function connectHttp(id, request, response){
+        this.connectHttp(method, params, opts, function connectHttp(id, request, response) {
           // Check if response object exists.
           if (!response) {
             callback(new Error('Have no response object'));
@@ -266,15 +266,16 @@ module.exports = function (classes){
 
           var data = '';
 
-          response.on('data', function responseData(chunk){
+          response.on('data', function responseData(chunk) {
             data += chunk;
           });
 
-          response.on('end', function responseEnd(){
+          response.on('end', function responseEnd() {
             if (response.statusCode !== 200) {
-              callback(new Error('"' + response.statusCode + '"' + data))
-              ;
-              return;
+              var err = new Error('Status Code: ' + response.statusCode + ', Response: ' + data);
+              err.statusCode = response.statusCode;
+              err.data = data;
+              return callback(err);
             }
             var decoded = JSON.parse(data);
             if (_.isFunction(callback)) {
