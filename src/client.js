@@ -57,6 +57,11 @@ module.exports = function (classes) {
 
         this._authHeader(headers);
 
+        // Override authorization to bearer scheme if bearer token is set
+        if (opts.bearerToken) {
+          headers['Authorization'] = 'Bearer ' + opts.bearerToken;
+        }
+
         // Then we build some basic headers.
         headers['Host'] = this.host;
         headers['Content-Length'] = Buffer.byteLength(requestJSON, 'utf8');

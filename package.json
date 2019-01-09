@@ -1,6 +1,6 @@
 {
-  "name": "json-rpc2",
-  "version": "1.0.2",
+  "name": "yo-jsonrpc2",
+  "version": "1.0.4",
   "description": "JSON-RPC 2.0 server and client library, with HTTP, TCP and Websocket endpoints",
   "main": "./src/jsonrpc.js",
   "keywords": [
@@ -22,12 +22,10 @@
     "name": "Eric Florenzano",
     "url": "eflorenzano.com"
   },
-  "maintainers": [
-    {
-      "name": "Paulo Cesar",
-      "url": "https://github.com/pocesar"
-    }
-  ],
+  "maintainers": [{
+    "name": "Kennedy Idialu",
+    "url": "https://github.com/ncodes"
+  }],
   "dependencies": {
     "jsonparse": "1.x.x",
     "debug": "2.x.x",
@@ -41,16 +39,14 @@
     "node": "0.10.x || 0.12.x"
   },
   "contributors": [
-    "Bill Casarin <bill@casarin.ca> (jb55.com)",
-    "Stefan Thomas <justmoon@members.fsf.org> (justmoon.net)",
-    "Paulo Cesar <email@pocesar.e4ward.com> (github.com/pocesar)"
+    "Kennedy Idialu <kennedyidialu@gmail.com> (github.com/ncodes)"
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/pocesar/node-jsonrpc2.git"
+    "url": "git://github.com/ellcrys/node-jsonrpc2.git"
   },
   "bugs": {
-    "url": "https://github.com/pocesar/node-jsonrpc2/issues"
+    "url": "https://github.com/ellcrys/node-jsonrpc2/issues"
   },
   "devDependencies": {
     "mocha": "2.x.x",
